@@ -1,4 +1,6 @@
 import { GetStaticProps } from 'next';
+import Prismic from '@prismicio/client'
+
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -24,13 +26,37 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-// export default function Home() {
-//   // TODO
-// }
+export default function Home( { posts }) {
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+  console.log(posts);
+  
+  return (
+    <h1>Ola mundo</h1>
+  )
+}
 
-//   // TODO
-// };
+export const getStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query(
+
+    [ 
+      Prismic.Predicates.at('document.type', 'posts'),
+    ], 
+    { 
+      fetch: ['post.title', 'post.subtitle', 'post.first_publication_date'],
+      pageSize : 25, 
+    
+    }
+
+  );
+
+  console.log("OLA prismic")
+  
+  return {
+    props: {
+      posts: postsResponse
+    }
+  }
+
+  // TODO
+};
