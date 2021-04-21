@@ -1,1 +1,49 @@
-// TODO
+.container {
+    margin: 0 auto;
+}
+
+.posts {
+
+
+
+    max-width: 1080px;
+    display: block;
+    margin: 0 auto;
+
+    padding: 0 2rem;
+
+    
+
+
+    a {
+        
+        display: block;
+
+        & + a {
+            padding-top: 2rem;
+        }
+
+
+        strong {
+            font-size: 1.2rem; 
+        }
+        p {
+            color: var(--gray-200);
+            padding: 0.5rem 0;
+        }
+        span {
+            
+            color: var(--gray-200);
+            time {
+                padding: 0 0.5rem;
+            }
+
+            p {
+                margin-left:  0.5rem;
+                display: inline;
+            }
+        }
+    }
+
+
+}
