@@ -1,11 +1,12 @@
 import { GetStaticProps } from 'next';
+import Head from 'next/head'
 import Prismic from '@prismicio/client'
-
 
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+
 
 interface Post {
   uid?: string;
@@ -31,7 +32,16 @@ export default function Home( { posts }) {
   console.log(posts);
   
   return (
-    <h1>Ola mundo</h1>
+    <>
+      <Head>
+        <title>Home</title>
+      </Head>
+
+      <main>
+
+      </main>
+
+    </>
   )
 }
 
