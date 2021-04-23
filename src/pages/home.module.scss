@@ -4,13 +4,11 @@
 
 .posts {
 
-
-
     max-width: 1080px;
     display: block;
     margin: 0 auto;
 
-    padding: 0 2rem;
+    padding: 0 2rem 2rem;
 
     
 
@@ -25,25 +23,60 @@
 
 
         strong {
-            font-size: 1.2rem; 
+            font-size: 2.125rem;
+            font-weight: 700;
         }
-        p {
+
+        > p { /* subtitle */
             color: var(--gray-200);
             padding: 0.5rem 0;
+            font-size: 1.125rem;
         }
-        span {
+
+        div {
             
             color: var(--gray-200);
-            time {
-                padding: 0 0.5rem;
+
+            display: flex;
+            gap: 1.5rem;
+            
+            span {
+
+                > svg {
+                    margin-right: 0.5rem;
+                }
+                time, p {
+                    display: inline;
+                }
+
             }
 
-            p {
-                margin-left:  0.5rem;
-                display: inline;
-            }
         }
     }
 
 
+}
+
+.loadMore {
+
+    max-width: 1080px;
+    display: block;
+    margin: 0 auto;
+
+    padding: 2rem;
+
+    button { 
+
+        background: transparent;
+        border: none;
+
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--pink-500);
+    }
+
+
+
+
+   
 }
