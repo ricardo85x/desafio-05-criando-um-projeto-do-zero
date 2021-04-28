@@ -2,7 +2,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { RichText } from "prismic-dom"
 import Head from 'next/head'
 import Header from '../../components/Header'
-import { FaCalendar, FaUser } from 'react-icons/fa'
+import { FaCalendar, FaClock, FaUser } from 'react-icons/fa'
 
 
 import { getPrismicClient } from '../../services/prismic';
@@ -14,6 +14,12 @@ import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
 
 
+interface ContentProps {
+  heading: string;
+  body: {
+      text: string;
+  }[];
+}
 interface Post {
   first_publication_date: string | null;
   data: {
@@ -23,17 +29,22 @@ interface Post {
       alt: string;
     };
     author: string;
-    content: {
-      heading: string;
-      body: {
-        text: string;
-      }[];
-    }[];
+    content: ContentProps[];
   };
 }
 
 interface PostProps {
   post: Post;
+}
+
+const calculateDuration = (content: ContentProps ) => {
+
+  const words = String(
+    content.heading + 
+    " " + 
+    RichText.asText(content.body)).split(/(\w+)/)
+
+  return Math.ceil(words.length/200);
 }
 
 export default function Post({ post: rawPost }: PostProps) {
@@ -47,9 +58,13 @@ export default function Post({ post: rawPost }: PostProps) {
     title: rawPost.data.title,
     banner: rawPost.data.banner,
     author: rawPost.data.author,
-    duration: 10,
-    body: RichText.asHtml(rawPost.data.content[0].body)
+    duration: calculateDuration(rawPost.data.content[0]),
+    body: RichText.asHtml(rawPost.data.content[0].body),
   }
+
+  /*
+    duration = parseInt(number os words / 200 (qtd humano le por mininuto))
+  */
 
 
   return (
@@ -83,6 +98,12 @@ export default function Post({ post: rawPost }: PostProps) {
                 <FaUser />
                 <p>{post.author}</p>
               </span>
+
+              <span>
+                <FaClock />
+                <p>{post.duration} min</p>
+              </span>
+
             </div>
 
             <div
