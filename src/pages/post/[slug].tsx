@@ -3,6 +3,7 @@ import { RichText } from "prismic-dom"
 import Head from 'next/head'
 import Header from '../../components/Header'
 import { FaCalendar, FaClock, FaUser } from 'react-icons/fa'
+import Prismic from '@prismicio/client'
 
 
 import { getPrismicClient } from '../../services/prismic';
@@ -17,7 +18,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 interface ContentProps {
   heading: string;
   body: {
-      text: string;
+    text: string;
   }[];
 }
 interface Post {
@@ -37,34 +38,44 @@ interface PostProps {
   post: Post;
 }
 
-const calculateDuration = (content: ContentProps ) => {
+const calculateDuration = (content: ContentProps) => {
 
   const words = String(
-    content.heading + 
-    " " + 
+    content.heading +
+    " " +
     RichText.asText(content.body)).split(/(\w+)/)
 
-  return Math.ceil(words.length/200);
+  return Math.ceil(words.length / 200);
 }
 
 export default function Post({ post: rawPost }: PostProps) {
 
-  const post = {
-    createdAt: format(
-      new Date(rawPost.first_publication_date),
-      "dd LLL yyyy", {
-      locale: ptBR
-    }),
-    title: rawPost.data.title,
-    banner: rawPost.data.banner,
-    author: rawPost.data.author,
-    duration: calculateDuration(rawPost.data.content[0]),
-    body: RichText.asHtml(rawPost.data.content[0].body),
+  let post;
+
+  if (rawPost) {
+    post = {
+      createdAt: format(
+        new Date(rawPost.first_publication_date),
+        "dd LLL yyyy", {
+        locale: ptBR
+      }),
+      title: rawPost.data.title,
+      banner: rawPost.data.banner,
+      author: rawPost.data.author,
+      duration: calculateDuration(rawPost.data.content[0]),
+      body: RichText.asHtml(rawPost.data.content[0].body),
+    }
   }
+
+
 
   /*
     duration = parseInt(number os words / 200 (qtd humano le por mininuto))
   */
+
+
+
+  console.log("Ola ", rawPost)
 
 
   return (
@@ -78,57 +89,89 @@ export default function Post({ post: rawPost }: PostProps) {
 
       <main className={styles.container} >
 
-        <div className={styles.banner}>
-          <img src={post.banner.url} alt={post.banner.alt} />
-        </div>
 
-        <div className={styles.post}>
 
-          <div>
-            <strong>
-              {post.title}
-            </strong>
-            <div className={styles.info}>
-              <span>
-                <FaCalendar />
-                <time>{post.createdAt}</time>
-              </span>
+        {post ? (
 
-              <span>
-                <FaUser />
-                <p>{post.author}</p>
-              </span>
-
-              <span>
-                <FaClock />
-                <p>{post.duration} min</p>
-              </span>
-
+          <>
+            <div className={styles.banner}>
+              <img src={post.banner.url} alt={post.banner.alt} />
             </div>
 
-            <div
-              className={styles.content}
-              dangerouslySetInnerHTML={{
-                __html: post.body
-              }}
-            />
-          </div>
-        </div>
+            <div className={styles.post}>
+
+              <div>
+                <strong>
+                  {post.title}
+                </strong>
+                <div className={styles.info}>
+                  <span>
+                    <FaCalendar />
+                    <time>{post.createdAt}</time>
+                  </span>
+
+                  <span>
+                    <FaUser />
+                    <p>{post.author}</p>
+                  </span>
+
+                  <span>
+                    <FaClock />
+                    <p>{post.duration} min</p>
+                  </span>
+
+                </div>
+
+                <div
+                  className={styles.content}
+                  dangerouslySetInnerHTML={{
+                    __html: post.body
+                  }}
+                />
+              </div>
+            </div>
+          </>
+
+        ) : (
+          <div>Carregando...</div>
+        )}
+
+
+
+
+
       </main>
     </>
   )
 }
 
 export const getStaticPaths = async () => {
+
   const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
 
-  // TODO
+  const posts = await prismic.query(
+    [
+      Prismic.Predicates.at('document.type', 'posts'),
+    ],
+    {
+      fetch: ['post.title', 'post.subtitle', 'post.first_publication_date'],
+      orderings: '[document.first_publication_date desc]',
+      pageSize: 1
+    }
 
+  );
+
+  const paths = posts.results.map(post => {
+    return {
+      params: {
+        slug: post.uid
+      }
+    }
+  })
 
   return {
-    paths: [],
-    fallback: 'blocking'
+    paths,
+    fallback: true
   }
 
 };
