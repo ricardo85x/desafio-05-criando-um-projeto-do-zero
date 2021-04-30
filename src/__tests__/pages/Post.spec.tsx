@@ -248,6 +248,7 @@ describe('Post', () => {
   it('should be able to render post document info', () => {
     const postProps = mockedGetByUIDReturn;
 
+
     render(<Post post={postProps} />);
 
     screen.getByText('Como utilizar Hooks');
@@ -268,7 +269,11 @@ describe('Post', () => {
 
     const postProps = mockedGetByUIDReturn;
 
+
     render(<Post post={postProps} />);
+
+    console.log("EPA", screen)
+
 
     screen.getByText('Carregando...');
   });

@@ -1,29 +1,16 @@
-.container {
-    margin: 0 auto;
-}
-
 .posts {
 
-    max-width: 721px;
     display: block;
-    margin: 0 auto;
-
-    padding: 0 2rem 2rem;
-
-
-    
-
+    padding: 2rem;
+    margin: 0 auto 0 0;
 
     a {
 
-        
-        
         display: block;
 
         & + a {
             padding-top: 3rem;
         }
-
 
         strong {
             font-size: 2.125rem;
@@ -57,16 +44,12 @@
         }
     }
 
-
 }
 
 .loadMore {
 
-    max-width: 721px;
-    display: block;
-    margin: 0 auto;
-
     padding: 2rem;
+    margin: 0 auto 0 0;
 
     button { 
 
@@ -78,8 +61,4 @@
         color: var(--pink-500);
     }
 
-
-
-
-   
 }

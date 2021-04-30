@@ -72,7 +72,6 @@ export default function Home({ postsPagination } : HomeProps) {
 
     if (nextPage) {
 
-      console.log("proxima pagina", nextPage)
 
       fetch(nextPage)
         .then(response => response.json())
@@ -100,7 +99,6 @@ export default function Home({ postsPagination } : HomeProps) {
 
   }
 
-  console.log(posts);
 
   return (
     <>
@@ -110,7 +108,7 @@ export default function Home({ postsPagination } : HomeProps) {
 
       <Header/>
 
-      <main className={styles.container} >
+      <main className={commonStyles.container} >
 
         <div className={styles.posts}>
 
@@ -162,6 +160,7 @@ export const getStaticProps: GetStaticProps = async () => {
     ],
     {
       fetch: ['post.title', 'post.subtitle', 'post.first_publication_date'],
+      orderings: '[document.first_publication_date desc]',
       pageSize: 2
     }
 

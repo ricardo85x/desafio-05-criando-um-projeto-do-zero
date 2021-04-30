@@ -5,6 +5,9 @@ import Header from '../../components/Header'
 import { FaCalendar, FaClock, FaUser } from 'react-icons/fa'
 import Prismic from '@prismicio/client'
 
+import { useRouter } from 'next/router'
+
+
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -38,22 +41,22 @@ interface PostProps {
   post: Post;
 }
 
-const calculateDuration = (content: ContentProps) => {
+const calculateDuration = (content: ContentProps[]) => {
 
-  const words = String(
-    content.heading +
-    " " +
-    RichText.asText(content.body)).split(/(\w+)/)
-
-  return Math.ceil(words.length / 200);
+  const words = content.reduce((total, item) => {
+    total += item.heading.split(/\S+/g).length
+    total += RichText.asText(item.body).split(/\S+/g).length
+    return total
+  },0)
+  
+  return Math.ceil(words / 200);
 }
 
 export default function Post({ post: rawPost }: PostProps) {
 
-  let post;
+  const router = useRouter()
 
-  if (rawPost) {
-    post = {
+  const post = !rawPost ? null : {
       createdAt: format(
         new Date(rawPost.first_publication_date),
         "dd LLL yyyy", {
@@ -62,22 +65,10 @@ export default function Post({ post: rawPost }: PostProps) {
       title: rawPost.data.title,
       banner: rawPost.data.banner,
       author: rawPost.data.author,
-      duration: calculateDuration(rawPost.data.content[0]),
-      body: RichText.asHtml(rawPost.data.content[0].body),
-    }
+      duration: calculateDuration(rawPost.data.content),
+      content: rawPost.data.content
   }
-
-
-
-  /*
-    duration = parseInt(number os words / 200 (qtd humano le por mininuto))
-  */
-
-
-
-  console.log("Ola ", rawPost)
-
-
+  
   return (
 
     <>
@@ -87,18 +78,19 @@ export default function Post({ post: rawPost }: PostProps) {
 
       <Header />
 
-      <main className={styles.container} >
+      { !router.isFallback && (
+        <div className={styles.banner}>
+          <img src={post.banner.url} alt={post.banner.alt} />
+        </div>
 
+      )}
+      
+      <main className={commonStyles.container} >
 
+        {!router.isFallback ? (
 
-        {post ? (
-
-          <>
-            <div className={styles.banner}>
-              <img src={post.banner.url} alt={post.banner.alt} />
-            </div>
-
-            <div className={styles.post}>
+          
+          <div className={styles.post}>
 
               <div>
                 <strong>
@@ -121,31 +113,31 @@ export default function Post({ post: rawPost }: PostProps) {
                   </span>
 
                 </div>
+                
+                { post.content.map( (content, _index) => (
 
-                <div
-                  className={styles.content}
-                  dangerouslySetInnerHTML={{
-                    __html: post.body
-                  }}
-                />
+                  <div key={_index} className={styles.content} >
+                    <strong>{content.heading}</strong>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: RichText.asHtml(content.body)
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-          </>
+          
 
         ) : (
           <div>Carregando...</div>
         )}
-
-
-
-
-
       </main>
     </>
   )
 }
 
-export const getStaticPaths = async () => {
+export const getStaticPaths : GetStaticPaths = async () => {
 
   const prismic = getPrismicClient();
 
