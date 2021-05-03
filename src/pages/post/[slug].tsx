@@ -7,8 +7,6 @@ import Prismic from '@prismicio/client'
 
 import { useRouter } from 'next/router'
 
-
-
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -16,6 +14,8 @@ import styles from './post.module.scss';
 
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
+
+import { Comments } from '../../components/Comments'
 
 
 interface ContentProps {
@@ -47,8 +47,8 @@ const calculateDuration = (content: ContentProps[]) => {
     total += item.heading.split(/\S+/g).length
     total += RichText.asText(item.body).split(/\S+/g).length
     return total
-  },0)
-  
+  }, 0)
+
   return Math.ceil(words / 200);
 }
 
@@ -57,18 +57,18 @@ export default function Post({ post: rawPost }: PostProps) {
   const router = useRouter()
 
   const post = !rawPost ? null : {
-      createdAt: format(
-        new Date(rawPost.first_publication_date),
-        "dd LLL yyyy", {
-        locale: ptBR
-      }),
-      title: rawPost.data.title,
-      banner: rawPost.data.banner,
-      author: rawPost.data.author,
-      duration: calculateDuration(rawPost.data.content),
-      content: rawPost.data.content
+    createdAt: format(
+      new Date(rawPost.first_publication_date),
+      "dd LLL yyyy", {
+      locale: ptBR
+    }),
+    title: rawPost.data.title,
+    banner: rawPost.data.banner,
+    author: rawPost.data.author,
+    duration: calculateDuration(rawPost.data.content),
+    content: rawPost.data.content
   }
-  
+
   return (
 
     <>
@@ -84,50 +84,76 @@ export default function Post({ post: rawPost }: PostProps) {
         </div>
 
       )}
-      
+
       <main className={commonStyles.container} >
 
         {!router.isFallback ? (
 
-          
+
           <div className={styles.post}>
 
-              <div>
-                <strong>
-                  {post.title}
-                </strong>
-                <div className={styles.info}>
-                  <span>
-                    <FaCalendar />
-                    <time>{post.createdAt}</time>
-                  </span>
+            <div>
+              <strong>
+                {post.title}
+              </strong>
+              <div className={styles.info}>
+                <span>
+                  <FaCalendar />
+                  <time>{post.createdAt}</time>
+                </span>
 
-                  <span>
-                    <FaUser />
-                    <p>{post.author}</p>
-                  </span>
+                <span>
+                  <FaUser />
+                  <p>{post.author}</p>
+                </span>
 
-                  <span>
-                    <FaClock />
-                    <p>{post.duration} min</p>
-                  </span>
+                <span>
+                  <FaClock />
+                  <p>{post.duration} min</p>
+                </span>
 
+              </div>
+
+              {post.content.map((content, _index) => (
+
+                <div key={_index} className={styles.content} >
+                  <strong>{content.heading}</strong>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: RichText.asHtml(content.body)
+                    }}
+                  />
                 </div>
-                
-                { post.content.map( (content, _index) => (
+              ))}
 
-                  <div key={_index} className={styles.content} >
-                    <strong>{content.heading}</strong>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: RichText.asHtml(content.body)
-                      }}
-                    />
-                  </div>
-                ))}
+
+            </div>
+
+            <hr />
+
+            <div className={styles.pagination}>
+
+              <div>
+                <span>BLA BLA BLA</span>
+                <a>Post anterior</a>
+              </div>
+
+              <div>
+                <span>LA LA LE LA</span>
+                <a>Próximo Post</a>
               </div>
             </div>
-          
+
+
+
+            <Comments />
+
+
+          </div>
+
+
+
+
 
         ) : (
           <div>Carregando...</div>
@@ -137,7 +163,7 @@ export default function Post({ post: rawPost }: PostProps) {
   )
 }
 
-export const getStaticPaths : GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
 
   const prismic = getPrismicClient();
 

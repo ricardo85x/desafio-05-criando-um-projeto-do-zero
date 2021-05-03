@@ -22,11 +22,7 @@
   width: var(--max-width);
   padding: 0 2rem;
 
-  div {
-
-
-
-
+  > div {
 
     display: flex;
     flex-direction: column;
@@ -34,11 +30,6 @@
     align-content: flex-start;
 
     max-width: 721px;
-
-
-    // background-color: aquamarine;
-
-
 
     >strong {
       font-weight: 700;
@@ -97,6 +88,44 @@
 
     }
 
+
+  }
+
+  hr {
+    margin: 3rem 0;
+
+    border: none;
+    height: 1px;
+    color: var(--gray-200);
+    background-color: var(--gray-200);
+    opacity: 10%;
+
+  }
+
+  .pagination {
+
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    div {
+      span {
+        display: block;
+        font-size: 1.125rem;
+      }
+      a {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--pink-500);
+      }
+    }
+    
+  }
+
+  section {
+    margin-top: 5rem;
   }
 
 

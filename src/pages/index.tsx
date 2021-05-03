@@ -15,6 +15,10 @@ import ptBR from 'date-fns/locale/pt-BR';
 
 import { FaCalendar, FaUser } from 'react-icons/fa'
 import { useEffect, useState } from 'react';
+
+
+
+
 interface Post {
   uid?: string;
   first_publication_date: string | null;
@@ -107,6 +111,8 @@ export default function Home({ postsPagination } : HomeProps) {
       </Head>
 
       <Header/>
+
+
 
       <main className={commonStyles.container} >
 
