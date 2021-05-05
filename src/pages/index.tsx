@@ -14,10 +14,7 @@ import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
 
 import { FaCalendar, FaUser } from 'react-icons/fa'
-import { useEffect, useState } from 'react';
-
-
-
+import { useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -35,6 +32,7 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
+  preview: boolean;
 }
 
 interface PostProps {
@@ -45,19 +43,21 @@ interface PostProps {
   updatedAt: string;
 }
 
-export default function Home({ postsPagination } : HomeProps) {
-
-  const formatDate = (date_string: string) => {
-    try {
-      return format(
-        new Date(date_string),
-        "dd LLL yyyy", {
-        locale: ptBR
-      })
-    } catch {
-      return date_string
-    }
+export const formatDate = (date_string: string) => {
+  try {
+    return format(
+      new Date(date_string),
+      "dd LLL yyyy", {
+      locale: ptBR
+    })
+  } catch {
+    return date_string
   }
+}
+
+export default function Home({ postsPagination, preview } : HomeProps) {
+
+  
 
   const [nextPage, setNextPage] = useState(postsPagination.next_page)
   const [posts, setPosts] = useState(
@@ -71,11 +71,9 @@ export default function Home({ postsPagination } : HomeProps) {
       }
     }))
 
-
   const loadMore = () => {
 
     if (nextPage) {
-
 
       fetch(nextPage)
         .then(response => response.json())
@@ -103,7 +101,6 @@ export default function Home({ postsPagination } : HomeProps) {
 
   }
 
-
   return (
     <>
       <Head>
@@ -111,8 +108,6 @@ export default function Home({ postsPagination } : HomeProps) {
       </Head>
 
       <Header/>
-
-
 
       <main className={commonStyles.container} >
 
@@ -150,13 +145,24 @@ export default function Home({ postsPagination } : HomeProps) {
           </div>
         }
 
+        {preview && (
+          <aside className={commonStyles.preview} >
+              <Link href="/api/exit-preview">
+              <a>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
+
       </main>
 
     </>
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({
+  preview = false,
+  previewData
+}) => {
 
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
@@ -167,14 +173,17 @@ export const getStaticProps: GetStaticProps = async () => {
     {
       fetch: ['post.title', 'post.subtitle', 'post.first_publication_date'],
       orderings: '[document.first_publication_date desc]',
-      pageSize: 2
+      pageSize: 2,
+      ref: previewData?.ref ?? null,
+
     }
 
   );
 
   return {
     props: {
-      postsPagination: postsResponse
+      postsPagination: postsResponse,
+      preview
     }
   }
 };

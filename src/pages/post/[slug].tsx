@@ -1,4 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Link from 'next/link'
 import { RichText } from "prismic-dom"
 import Head from 'next/head'
 import Header from '../../components/Header'
@@ -12,10 +13,8 @@ import { getPrismicClient } from '../../services/prismic';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
-import format from 'date-fns/format';
-import ptBR from 'date-fns/locale/pt-BR';
-
 import { Comments } from '../../components/Comments'
+import { formatDate } from '..'
 
 
 interface ContentProps {
@@ -35,10 +34,23 @@ interface Post {
     author: string;
     content: ContentProps[];
   };
+  last_publication_date?: string,
+  uid?: string; 
 }
 
 interface PostProps {
   post: Post;
+  preview: boolean;
+  pagination: {
+    next?: {
+      title: string;
+      slug: string;
+    },
+    prev?: {
+      title: string;
+      slug: string;
+    }
+  }
 }
 
 const calculateDuration = (content: ContentProps[]) => {
@@ -52,21 +64,22 @@ const calculateDuration = (content: ContentProps[]) => {
   return Math.ceil(words / 200);
 }
 
-export default function Post({ post: rawPost }: PostProps) {
+
+export default function Post({ post: rawPost, pagination, preview }: PostProps) {
 
   const router = useRouter()
 
   const post = !rawPost ? null : {
-    createdAt: format(
-      new Date(rawPost.first_publication_date),
-      "dd LLL yyyy", {
-      locale: ptBR
-    }),
+    slug: rawPost.uid as string,
+    createdAt: formatDate(rawPost.first_publication_date),
     title: rawPost.data.title,
     banner: rawPost.data.banner,
     author: rawPost.data.author,
     duration: calculateDuration(rawPost.data.content),
-    content: rawPost.data.content
+    content: rawPost.data.content,
+    updatedAt: rawPost.last_publication_date && 
+      rawPost.last_publication_date !== rawPost.first_publication_date ? 
+      formatDate(rawPost.last_publication_date) : ""
   }
 
   return (
@@ -88,7 +101,6 @@ export default function Post({ post: rawPost }: PostProps) {
       <main className={commonStyles.container} >
 
         {!router.isFallback ? (
-
 
           <div className={styles.post}>
 
@@ -114,6 +126,14 @@ export default function Post({ post: rawPost }: PostProps) {
 
               </div>
 
+              {post.updatedAt !== "" && (
+                <div className={styles.edited}>
+                  <span >
+                    * Editado em {post.updatedAt}
+                  </span>
+                </div>
+                )}
+
               {post.content.map((content, _index) => (
 
                 <div key={_index} className={styles.content} >
@@ -133,27 +153,45 @@ export default function Post({ post: rawPost }: PostProps) {
 
             <div className={styles.pagination}>
 
+              
               <div>
-                <span>BLA BLA BLA</span>
-                <a>Post anterior</a>
+                { pagination?.prev && (
+                  <>
+                    <span>{pagination.prev.title}</span>
+                    <Link href={`/post/${pagination.prev.slug}`}>
+                      <a>Post anterior</a>
+                    </Link>
+                  </>
+                )}
+               
               </div>
 
               <div>
-                <span>LA LA LE LA</span>
-                <a>Próximo Post</a>
+                { pagination?.next && (
+                  <>
+                    <span>{pagination.next.title}</span>
+                    <Link href={`/post/${pagination.next.slug}`}>
+                      <a>Próximo Post</a>
+                    </Link>
+                  </>
+                )}
+              
               </div>
             </div>
 
 
-
             <Comments />
+
+            {preview && (
+              <aside className={commonStyles.preview} >
+                <Link href="/api/exit-preview">
+                  <a>Sair do modo Preview</a>
+                </Link>
+              </aside>
+            )}
 
 
           </div>
-
-
-
-
 
         ) : (
           <div>Carregando...</div>
@@ -194,16 +232,58 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 };
 
-export const getStaticProps: GetStaticProps = async context => {
+export const getStaticProps: GetStaticProps = async ({
+  preview = false,
+  previewData,
+  params
+}) => {
+
   const prismic = getPrismicClient();
+  const { slug }  = params
 
-  const { params: { slug } } = context
+  const post = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref ?? null,
+  })
 
-  const post = await prismic.getByUID('posts', String(slug), {})
+  const next = await prismic.query(
+    [
+      Prismic.Predicates.at('document.type', 'posts'),
+    ],
+    {
+      fetch: ['post.title'],
+      orderings: '[document.first_publication_date desc]',
+      pageSize: 1,
+      after: post.id,
+    }
+  );
+
+  const prev = await prismic.query(
+    [
+      Prismic.Predicates.at('document.type', 'posts'),
+    ],
+    {
+      fetch: ['post.title'],
+      orderings: '[document.first_publication_date]',
+      pageSize: 1,
+      after: post.id,
+    }
+  );
 
   return {
     props: {
-      post
+      post,
+      preview,
+      pagination: {
+        next: next.results.length > 0 ? {
+          slug: next.results[0].uid,
+          title: next.results[0].data?.title
+        } : null,
+        prev: prev.results.length > 0 ? {
+          slug: prev.results[0].uid,
+          title: prev.results[0].data?.title
+        } : null
+
+      }
     }
   }
 

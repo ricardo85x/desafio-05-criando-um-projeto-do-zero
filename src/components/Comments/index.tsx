@@ -1,10 +1,15 @@
 import { FC } from "react";
-export const Comments: FC = () => {
+export const Comments: FC = (params) => {
+       
     return (
         <section
             ref={(elem) => {
                 if (!elem || elem.childNodes.length) {
-                    return;
+                    if (!elem) {
+                        return;
+                    } else {
+                        elem.removeChild(elem.childNodes[0])
+                    }
                 }
                 const scriptElem = document.createElement("script");
                 scriptElem.src = "https://utteranc.es/client.js";
@@ -12,7 +17,7 @@ export const Comments: FC = () => {
                 scriptElem.crossOrigin = "anonymous";
                 scriptElem.setAttribute("repo", "ricardo85x/desafio-05-criando-um-projeto-do-zero");
                 scriptElem.setAttribute("issue-term", "pathname");
-                scriptElem.setAttribute("label", "desafio5");
+                scriptElem.setAttribute("label", 'Blog Post');
                 scriptElem.setAttribute("theme", "github-dark");
                 elem.appendChild(scriptElem);
             }}
